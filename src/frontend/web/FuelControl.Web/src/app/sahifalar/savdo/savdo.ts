@@ -8,8 +8,9 @@ import { Bildirish, xatoMatni } from '../../core/bildirish';
 import { jonliYangila } from '../../core/malumot';
 import { davomiylikSD, harflar, ishoraPul, kunQisqa, litr, litrQisqa, pul, sana, soat } from '../../core/format';
 import { telefonFormat } from '../../core/telefon';
-import type { AparatDto, NasiyaDto, SmenaDto, SmenaTafsilotDto, YoqilgiTuriDto } from '../../api/model';
+import type { AparatDto, NasiyaDto, NasiyalarXulosaDto, SmenaDto, SmenaTafsilotDto, YoqilgiTuriDto } from '../../api/model';
 import { Ikon } from '../../ui/ikon';
+import { AparatYoq } from '../../ui/aparat-yoq';
 import { YoqilgiPill, MashinaRaqami } from '../../ui/belgilar';
 import { SonKiritish } from '../../ui/son-kiritish';
 import { EnterKeyingi } from '../../ui/enter-keyingi';
@@ -24,7 +25,7 @@ import { BakKirimDialog } from '../../ui/dialoglar/bak-kirim-dialog';
  */
 @Component({
   selector: 'savdo-sahifa',
-  imports: [RouterLink, FormsModule, Ikon, YoqilgiPill, MashinaRaqami, SonKiritish, EnterKeyingi, NasiyaDialog, QarzQaytdiDialog, XarajatDialog, BakKirimDialog],
+  imports: [RouterLink, FormsModule, Ikon, AparatYoq, YoqilgiPill, MashinaRaqami, SonKiritish, EnterKeyingi, NasiyaDialog, QarzQaytdiDialog, XarajatDialog, BakKirimDialog],
   templateUrl: './savdo.html',
   styleUrl: './savdo.scss',
 })
@@ -49,6 +50,8 @@ export class SavdoSahifa {
   protected readonly aparatlar = signal<AparatDto[]>([]);
   private readonly yoqilgilar = signal<YoqilgiTuriDto[]>([]);
   protected readonly muddatiOtgan = signal<NasiyaDto[]>([]);
+  /** Jami qarzdorlik qatori uchun (NasiyalarXulosaDto: faolQarz, faolSoni) — muddati o'tganlar ro'yxatidan mustaqil. */
+  protected readonly qarzXulosa = signal<NasiyalarXulosaDto | null>(null);
   protected readonly muddatiOtganJami = computed(() => this.muddatiOtgan().reduce((a, n) => a + n.qoldiq, 0));
 
   protected readonly nasiyaOchiq = signal(false);
@@ -83,6 +86,7 @@ export class SavdoSahifa {
       ]);
       this.joriy.set(j); this.aparatlar.set(ap); this.yoqilgilar.set(yo); this.oxirgi.set(ox);
       this.muddatiOtgan.set(otgan.royxat.filter((n) => n.holati === 'MuddatiOtgan').sort((a, b) => a.muddatgachaKun - b.muddatgachaKun || a.id - b.id)); // eng ko'p o'tgani birinchi
+      this.qarzXulosa.set(otgan.xulosa);
       this.xato.set(null);
     } catch (e) {
       if (!jim) this.xato.set(xatoMatni(e, this.til.t('AloqaYoq'), this.til.t('Xato_Umumiy')));
